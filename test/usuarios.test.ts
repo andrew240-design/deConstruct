@@ -5,31 +5,8 @@ import { Server } from 'node:http';
 import { crearServidorHttp } from '../src/http/servidor-http';
 import { hashearContrasena, verificarContrasena } from '../src/usuarios/contrasena';
 import { ErrorCorreoDuplicado, ErrorDeValidacion, ErrorUsuarioNoEncontrado } from '../src/usuarios/usuario.errores';
-import { RepositorioUsuarios } from '../src/usuarios/usuario.repositorio';
 import { ServicioUsuarios } from '../src/usuarios/usuario.servicio';
-import { NuevoUsuario, UsuarioAlmacenado } from '../src/usuarios/usuario.tipos';
-
-/** Repositorio en memoria: permite probar la lógica sin SQL Server. */
-class RepositorioEnMemoria implements RepositorioUsuarios {
-  readonly guardados: UsuarioAlmacenado[] = [];
-
-  async existeCorreo(correo: string) {
-    return this.guardados.some((u) => u.correo === correo);
-  }
-  async guardar(nuevo: NuevoUsuario) {
-    const usuario: UsuarioAlmacenado = {
-      ...nuevo,
-      idUsuario: this.guardados.length + 1,
-      activo: true,
-      fechaRegistro: new Date(),
-    };
-    this.guardados.push(usuario);
-    return usuario;
-  }
-  async buscarPorId(idUsuario: number) {
-    return this.guardados.find((u) => u.idUsuario === idUsuario) ?? null;
-  }
-}
+import { RepositorioEnMemoria } from './repositorio-en-memoria';
 
 const REGISTRO_VALIDO = {
   nombreCompleto: '  Ana Ruiz ',

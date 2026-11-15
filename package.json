@@ -6,7 +6,7 @@
   "scripts": {
     "servidor": "tsx src/servidor.ts",
     "registrar-demo": "tsx src/registrar-demo.ts",
-    "test": "tsx --test test/usuarios.test.ts",
+    "test": "tsx --test test/usuarios.test.ts test/usuarios.actualizacion.test.ts test/usuarios.consulta.test.ts",
     "verificar-tipos": "tsc --noEmit"
   },
   "dependencies": {
