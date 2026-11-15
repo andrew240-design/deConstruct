@@ -10,6 +10,7 @@ import { ServicioUsuarios } from '../usuarios/usuario.servicio';
 const TAMANO_MAXIMO_CUERPO = 10_000; // bytes
 const RUTA_USUARIOS = '/usuarios';
 const PATRON_USUARIO_POR_ID = /^\/usuarios\/(\d+)$/;
+const ID_MAXIMO = 2_147_483_647; // máximo de un INT de SQL Server
 
 export function crearServidorHttp(servicio: ServicioUsuarios): Server {
   return createServer((solicitud, respuesta) => {
@@ -26,18 +27,55 @@ async function atender(solicitud: IncomingMessage, respuesta: ServerResponse, se
 }
 
 async function enrutar(solicitud: IncomingMessage, respuesta: ServerResponse, servicio: ServicioUsuarios) {
-  const { pathname } = new URL(solicitud.url ?? '/', 'http://localhost');
-  const coincidencia = PATRON_USUARIO_POR_ID.exec(pathname);
+  const { pathname, searchParams } = new URL(solicitud.url ?? '/', 'http://localhost');
+  const idUsuario = leerIdUsuario(pathname);
 
-  if (solicitud.method === 'POST' && pathname === RUTA_USUARIOS) {
-    const usuario = await servicio.registrar(await leerCuerpoJson(solicitud));
-    return responderJson(respuesta, 201, { usuario });
+  if (pathname === RUTA_USUARIOS && solicitud.method === 'POST') {
+    return registrarUsuario(solicitud, respuesta, servicio);
   }
-  if (solicitud.method === 'GET' && coincidencia) {
-    const usuario = await servicio.consultarPorId(Number(coincidencia[1]));
-    return responderJson(respuesta, 200, { usuario });
+  if (pathname === RUTA_USUARIOS && solicitud.method === 'GET') {
+    return listarUsuarios(searchParams, respuesta, servicio);
+  }
+  if (idUsuario !== null && solicitud.method === 'GET') {
+    return consultarUsuario(idUsuario, respuesta, servicio);
+  }
+  if (idUsuario !== null && solicitud.method === 'PATCH') {
+    return actualizarUsuario(idUsuario, solicitud, respuesta, servicio);
   }
   responderJson(respuesta, 404, { error: 'Ruta no encontrada.' });
+}
+
+async function registrarUsuario(solicitud: IncomingMessage, respuesta: ServerResponse, servicio: ServicioUsuarios) {
+  const usuario = await servicio.registrar(await leerCuerpoJson(solicitud));
+  responderJson(respuesta, 201, { usuario });
+}
+
+async function listarUsuarios(parametros: URLSearchParams, respuesta: ServerResponse, servicio: ServicioUsuarios) {
+  const pagina = await servicio.listar(Object.fromEntries(parametros));
+  responderJson(respuesta, 200, pagina);
+}
+
+async function consultarUsuario(idUsuario: number, respuesta: ServerResponse, servicio: ServicioUsuarios) {
+  const usuario = await servicio.consultarPorId(idUsuario);
+  responderJson(respuesta, 200, { usuario });
+}
+
+async function actualizarUsuario(
+  idUsuario: number,
+  solicitud: IncomingMessage,
+  respuesta: ServerResponse,
+  servicio: ServicioUsuarios,
+) {
+  const usuario = await servicio.actualizar(idUsuario, await leerCuerpoJson(solicitud));
+  responderJson(respuesta, 200, { usuario });
+}
+
+/** Devuelve el id de rutas como /usuarios/7, o null si la ruta no es de ese tipo o el id no cabe en un INT. */
+function leerIdUsuario(pathname: string): number | null {
+  const coincidencia = PATRON_USUARIO_POR_ID.exec(pathname);
+  if (!coincidencia) return null;
+  const id = Number(coincidencia[1]);
+  return id >= 1 && id <= ID_MAXIMO ? id : null;
 }
 
 async function leerCuerpoJson(solicitud: IncomingMessage): Promise<Record<string, unknown>> {

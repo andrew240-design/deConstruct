@@ -1,4 +1,4 @@
-import { DatosRegistro } from './usuario.tipos';
+import { CambiosUsuario, DatosRegistro } from './usuario.tipos';
 
 const LONGITUD_MAXIMA_NOMBRE = 100;
 const LONGITUD_MAXIMA_CORREO = 120;
@@ -20,7 +20,7 @@ export function validarRegistro(datos: DatosRegistro): string[] {
   ];
 }
 
-function validarNombre(nombre: string): string[] {
+export function validarNombre(nombre: string): string[] {
   if (nombre === '') return ['El nombre es obligatorio.'];
   if (nombre.length > LONGITUD_MAXIMA_NOMBRE) {
     return [`El nombre no puede superar ${LONGITUD_MAXIMA_NOMBRE} caracteres.`];
@@ -28,7 +28,7 @@ function validarNombre(nombre: string): string[] {
   return [];
 }
 
-function validarCorreo(correo: string): string[] {
+export function validarCorreo(correo: string): string[] {
   if (correo === '') return ['El correo es obligatorio.'];
   if (correo.length > LONGITUD_MAXIMA_CORREO) {
     return [`El correo no puede superar ${LONGITUD_MAXIMA_CORREO} caracteres.`];
@@ -37,7 +37,7 @@ function validarCorreo(correo: string): string[] {
   return [];
 }
 
-function validarContrasena(contrasena: string): string[] {
+export function validarContrasena(contrasena: string): string[] {
   if (contrasena.length < LONGITUD_MINIMA_CONTRASENA) {
     return [`La contraseña debe tener al menos ${LONGITUD_MINIMA_CONTRASENA} caracteres.`];
   }
@@ -50,10 +50,24 @@ function validarContrasena(contrasena: string): string[] {
   return [];
 }
 
-function validarTelefono(telefono: string | null): string[] {
+export function validarTelefono(telefono: string | null): string[] {
   if (telefono === null) return [];
   if (!PATRON_TELEFONO.test(telefono)) {
     return ['El teléfono debe tener entre 10 y 14 dígitos, con + opcional al inicio.'];
   }
   return [];
+}
+
+/** Valida solo los campos presentes: en una actualización parcial los demás no se tocan. */
+export function validarCambios(cambios: CambiosUsuario): string[] {
+  return [
+    ...validarSiExiste(cambios.nombreCompleto, validarNombre),
+    ...validarSiExiste(cambios.correo, validarCorreo),
+    ...validarSiExiste(cambios.contrasena, validarContrasena),
+    ...validarSiExiste(cambios.telefono, validarTelefono),
+  ];
+}
+
+function validarSiExiste<T>(valor: T | undefined, validar: (valor: T) => string[]): string[] {
+  return valor === undefined ? [] : validar(valor);
 }
