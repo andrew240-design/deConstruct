@@ -1,0 +1,23 @@
+{
+  "name": "deconstruct-sprint1",
+  "version": "1.0.0",
+  "description": "Sprint 1: registro de usuarios de DeConstruct (TypeScript, TypeORM, SQL Server)",
+  "private": true,
+  "scripts": {
+    "servidor": "tsx src/servidor.ts",
+    "registrar-demo": "tsx src/registrar-demo.ts",
+    "test": "tsx --test test/usuarios.test.ts",
+    "verificar-tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "mssql": "^12.7.13",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

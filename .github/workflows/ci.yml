@@ -1,0 +1,32 @@
+name: CI
+
+# Se ejecuta en cada push a main y en cada pull request hacia main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validar:
+    name: Verificar tipos y ejecutar pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v6
+
+      - name: Preparar Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Verificar tipos (TypeScript)
+        run: npm run verificar-tipos
+
+      - name: Ejecutar pruebas automáticas
+        run: npm test

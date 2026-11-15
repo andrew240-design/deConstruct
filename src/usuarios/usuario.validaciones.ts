@@ -1,0 +1,59 @@
+import { DatosRegistro } from './usuario.tipos';
+
+const LONGITUD_MAXIMA_NOMBRE = 100;
+const LONGITUD_MAXIMA_CORREO = 120;
+const LONGITUD_MINIMA_CONTRASENA = 8;
+const LONGITUD_MAXIMA_CONTRASENA = 128;
+
+const PATRON_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PATRON_TELEFONO = /^\+?[0-9]{10,14}$/;
+const PATRON_LETRA = /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/;
+const PATRON_DIGITO = /[0-9]/;
+
+/** Devuelve la lista de problemas; si está vacía, los datos son válidos. */
+export function validarRegistro(datos: DatosRegistro): string[] {
+  return [
+    ...validarNombre(datos.nombreCompleto),
+    ...validarCorreo(datos.correo),
+    ...validarContrasena(datos.contrasena),
+    ...validarTelefono(datos.telefono),
+  ];
+}
+
+function validarNombre(nombre: string): string[] {
+  if (nombre === '') return ['El nombre es obligatorio.'];
+  if (nombre.length > LONGITUD_MAXIMA_NOMBRE) {
+    return [`El nombre no puede superar ${LONGITUD_MAXIMA_NOMBRE} caracteres.`];
+  }
+  return [];
+}
+
+function validarCorreo(correo: string): string[] {
+  if (correo === '') return ['El correo es obligatorio.'];
+  if (correo.length > LONGITUD_MAXIMA_CORREO) {
+    return [`El correo no puede superar ${LONGITUD_MAXIMA_CORREO} caracteres.`];
+  }
+  if (!PATRON_CORREO.test(correo)) return ['El correo no tiene un formato válido.'];
+  return [];
+}
+
+function validarContrasena(contrasena: string): string[] {
+  if (contrasena.length < LONGITUD_MINIMA_CONTRASENA) {
+    return [`La contraseña debe tener al menos ${LONGITUD_MINIMA_CONTRASENA} caracteres.`];
+  }
+  if (contrasena.length > LONGITUD_MAXIMA_CONTRASENA) {
+    return [`La contraseña no puede superar ${LONGITUD_MAXIMA_CONTRASENA} caracteres.`];
+  }
+  if (!PATRON_LETRA.test(contrasena) || !PATRON_DIGITO.test(contrasena)) {
+    return ['La contraseña debe incluir al menos una letra y un número.'];
+  }
+  return [];
+}
+
+function validarTelefono(telefono: string | null): string[] {
+  if (telefono === null) return [];
+  if (!PATRON_TELEFONO.test(telefono)) {
+    return ['El teléfono debe tener entre 10 y 14 dígitos, con + opcional al inicio.'];
+  }
+  return [];
+}
