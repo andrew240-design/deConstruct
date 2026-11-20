@@ -6,6 +6,7 @@ const PAGINA_MAXIMA = 100_000;
 const TAMANO_POR_DEFECTO = 10;
 const TAMANO_MAXIMO = 50;
 const LONGITUD_MAXIMA_TEXTO = 100;
+const PATRON_ENTERO_DECIMAL = /^[0-9]+$/; // rechaza 1e1, 0x10, ' 5 ', +5 y 5.0, que Number() sí aceptaría
 
 /** Convierte los parámetros de la URL en filtros tipados; si alguno es inválido, informa todos. */
 export function interpretarFiltros(entrada: EntradaFiltros): FiltrosUsuarios {
@@ -55,8 +56,8 @@ function leerEnteroPositivo(
   problemas: string[],
 ): number {
   if (valor === undefined || valor === '') return porDefecto;
-  const numero = Number(valor);
-  if (Number.isInteger(numero) && numero >= 1 && numero <= maximo) return numero;
+  const numero = PATRON_ENTERO_DECIMAL.test(valor) ? Number(valor) : NaN;
+  if (numero >= 1 && numero <= maximo) return numero;
   problemas.push(`El parámetro ${nombre} debe ser un entero entre 1 y ${maximo}.`);
   return porDefecto;
 }
