@@ -21,6 +21,7 @@ export class ServicioUsuarios {
 
   /** Alta de un usuario: limpia, valida, comprueba el correo, protege la contraseña y guarda. */
   async registrar(entrada: EntradaRegistro): Promise<UsuarioPublico> {
+    exigirCamposDeTexto(entrada);
     const datos = limpiarEntrada(entrada);
     exigirDatosValidos(datos);
     await this.exigirCorreoDisponible(datos.correo);
@@ -31,6 +32,7 @@ export class ServicioUsuarios {
 
   /** Actualización parcial: solo cambia los campos recibidos. El rol nunca se modifica desde aquí. */
   async actualizar(idUsuario: number, entrada: EntradaActualizacion): Promise<UsuarioPublico> {
+    exigirCamposDeTexto(entrada);
     const cambios = limpiarCambios(entrada);
     exigirAlMenosUnCambio(cambios);
     exigirCambiosValidos(cambios);
@@ -98,6 +100,20 @@ function contrasenaComoTexto(valor: unknown): string {
 function telefonoONulo(valor: unknown): string | null {
   const telefono = textoLimpio(valor);
   return telefono === '' ? null : telefono;
+}
+
+const CAMPOS_DE_TEXTO = ['nombreCompleto', 'correo', 'contrasena', 'telefono'] as const;
+
+/** Un valor de otro tipo (número, booleano, objeto) se rechaza; antes se trataba como "campo vacío". */
+function exigirCamposDeTexto(entrada: EntradaRegistro | EntradaActualizacion): void {
+  const problemas = CAMPOS_DE_TEXTO.filter((campo) => !esTextoOAusente(entrada[campo])).map(
+    (campo) => `El campo ${campo} debe enviarse como texto.`,
+  );
+  if (problemas.length > 0) throw new ErrorDeValidacion(problemas);
+}
+
+function esTextoOAusente(valor: unknown): boolean {
+  return valor === undefined || valor === null || typeof valor === 'string';
 }
 
 function exigirDatosValidos(datos: DatosRegistro): void {

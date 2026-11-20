@@ -5,7 +5,11 @@ const LONGITUD_MAXIMA_CORREO = 120;
 const LONGITUD_MINIMA_CONTRASENA = 8;
 const LONGITUD_MAXIMA_CONTRASENA = 128;
 
-const PATRON_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Parte local: bloques de caracteres permitidos separados por UN punto (sin puntos al inicio, al final ni seguidos).
+const BLOQUE_LOCAL = "[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+";
+// Dominio: etiquetas de hasta 63 caracteres que no empiezan ni terminan con guion, y extensión de 2 o más letras.
+const ETIQUETA_DOMINIO = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?';
+const PATRON_CORREO = new RegExp(`^${BLOQUE_LOCAL}(?:\\.${BLOQUE_LOCAL})*@(?:${ETIQUETA_DOMINIO}\\.)+[A-Za-z]{2,}$`);
 const PATRON_TELEFONO = /^\+?[0-9]{10,14}$/;
 const PATRON_LETRA = /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/;
 const PATRON_DIGITO = /[0-9]/;
